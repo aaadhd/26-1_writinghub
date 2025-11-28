@@ -20,7 +20,7 @@ const LessonCard = ({ lesson, onStepClick, onReportClick, hasDraft1Feedback }) =
       key: "draft2",
       label: "2nd Draft",
       status: lesson.draft2Status,
-      hasFeedback: hasDraft1Feedback || false, // 1st Draft 피드백이 있으면 2nd Draft 아이콘에 표시
+      hasFeedback: hasDraft1Feedback || false, // 1st Draft 피드백 완료 시에만 표시
     },
   ];
 

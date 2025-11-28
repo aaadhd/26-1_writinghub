@@ -337,8 +337,13 @@ const StudentApp = () => {
     });
   };
 
-  const handleSubmitDraft1 = (lessonId, data, hasDraft2Progress) => {
-    if (hasDraft2Progress) {
+  const handleSubmitDraft1 = (lessonId, data) => {
+    // localStorage에서 직접 최신 상태 확인 (클로저 문제 방지)
+    const currentDraft2Map = loadDraftMap("draft2");
+    const actualDraft2 = currentDraft2Map[lessonId];
+    const hasActualDraft2Progress = Boolean(actualDraft2?.body?.trim());
+    
+    if (hasActualDraft2Progress) {
       setConfirmState({
         lessonId,
         data,
@@ -356,14 +361,19 @@ const StudentApp = () => {
     setDraft1SubmittedMap((prev) => ({ ...prev, [lessonId]: "true" }));
 
     if (clearSecondDraft) {
+      // 2nd Draft 내용 삭제 (상태 업데이트와 localStorage 저장을 동시에)
       setDraft2Map((prev) => {
         const next = { ...prev };
         delete next[lessonId];
+        // localStorage에 즉시 반영
+        saveDraftMap("draft2", next);
         return next;
       });
       setDraft2SubmittedMap((prev) => {
         const next = { ...prev };
         delete next[lessonId];
+        // localStorage에 즉시 반영
+        saveSubmittedMap("draft2Submitted", next);
         return next;
       });
     }
@@ -384,7 +394,12 @@ const StudentApp = () => {
   };
 
   const handleSaveDraft2 = (lessonId, data) => {
-    setDraft2Map((prev) => ({ ...prev, [lessonId]: data }));
+    setDraft2Map((prev) => {
+      const next = { ...prev, [lessonId]: data };
+      // localStorage에 즉시 반영 (최신 상태 보장)
+      saveDraftMap("draft2", next);
+      return next;
+    });
 
     // rejected 상태에서 저장하면 submitted를 false로 초기화 (다시 작성 중)
     const lesson = lessons.find(l => l.id === lessonId);
@@ -423,6 +438,64 @@ const StudentApp = () => {
     handleBackToActivity();
   };
 
+  const handleResetLesson = (lessonId) => {
+    if (!window.confirm(`Lesson ${lessonId}의 모든 데이터를 초기화하시겠습니까?`)) {
+      return;
+    }
+
+    // draft1, draft2 내용 삭제
+    setDraft1Map((prev) => {
+      const next = { ...prev };
+      delete next[lessonId];
+      saveDraftMap("draft1", next);
+      return next;
+    });
+    setDraft2Map((prev) => {
+      const next = { ...prev };
+      delete next[lessonId];
+      saveDraftMap("draft2", next);
+      return next;
+    });
+
+    // submitted 상태 삭제
+    setDraft1SubmittedMap((prev) => {
+      const next = { ...prev };
+      delete next[lessonId];
+      saveSubmittedMap("draft1Submitted", next);
+      return next;
+    });
+    setDraft2SubmittedMap((prev) => {
+      const next = { ...prev };
+      delete next[lessonId];
+      saveSubmittedMap("draft2Submitted", next);
+      return next;
+    });
+
+    // teacherFeedback 삭제 (해당 lesson 관련)
+    setTeacherFeedbackMap((prev) => {
+      const next = { ...prev };
+      delete next[lessonId];
+      delete next[`${lessonId}_draft1`];
+      delete next[`${lessonId}_draft2`];
+      saveTeacherFeedback(next);
+      return next;
+    });
+
+    // draftEvaluated 삭제 (해당 lesson 관련)
+    clearDraftEvaluation(lessonId, "draft1");
+    clearDraftEvaluation(lessonId, "draft2");
+
+    // lesson 상태 초기화
+    updateLesson(lessonId, {
+      outlineStatus: "available",
+      draft1Status: "available",
+      draft2Status: "available",
+      reportAvailable: false,
+    });
+
+    alert("초기화되었습니다.");
+  };
+
 
   const reportFeedback = reportLesson
     ? teacherFeedbackMap[`${reportLesson.id}_draft2`] || 
@@ -444,6 +517,7 @@ const StudentApp = () => {
           onStepClick={handleStepClick}
           onReportClick={setReportLesson}
           teacherFeedbackMap={teacherFeedbackMap}
+          onResetLesson={handleResetLesson}
         />
       ) : (
         <DraftWorkspace
@@ -469,9 +543,10 @@ const StudentApp = () => {
             if (!selectedLesson) return;
             handleSaveDraft1(selectedLesson.id, data);
           }}
-          onSubmitDraft1={(data, hasDraft2Progress) => {
+          onSubmitDraft1={(data) => {
             if (!selectedLesson) return;
-            handleSubmitDraft1(selectedLesson.id, data, hasDraft2Progress);
+            // handleSubmitDraft1 내부에서 draft2Map의 최신 상태를 확인
+            handleSubmitDraft1(selectedLesson.id, data);
           }}
           onSaveDraft2={(data) => {
             if (!selectedLesson) return;

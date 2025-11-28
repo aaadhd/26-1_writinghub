@@ -1,23 +1,23 @@
-// src/components/StepCircle.jsx
 import React from "react";
-import "../styles.css";
 
 export default function StepCircle({
-  status = "available",  // 🔥 default = available (파란 진입 가능)
+  status = "available",
   label,
   onClick,
   disabled = false,
-  hasFeedback = false,  // 피드백 도착 여부
+  hasFeedback = false,
 }) {
   const stateClass = {
     locked: "step-locked",
-    available: "step-available",     // 파란 진입 버튼
-    saved: "step-saved",             // 노란 디스크
-    rejected: "step-rejected",       // 빨간 다시하기
-    completed: "step-completed",     // 초록 체크
+    available: "step-available",
+    saved: "step-saved",
+    rejected: "step-rejected",
+    completed: "step-completed",
   }[status] || "step-available";
 
   const isDisabled = disabled || status === "locked";
+  // 2nd Draft에 피드백 받았을 때 색상 구분을 위한 클래스
+  const feedbackClass = hasFeedback && status === "available" ? "step-has-feedback" : "";
 
   return (
     <button
@@ -25,7 +25,7 @@ export default function StepCircle({
       className={`step-circle-wrapper ${isDisabled ? "step-disabled" : ""}`}
       onClick={() => !isDisabled && onClick?.()}
     >
-      <div className={`step-circle ${stateClass}`}>
+      <div className={`step-circle ${stateClass} ${feedbackClass}`}>
         <StatusIcon status={status} hasFeedback={hasFeedback} />
       </div>
       <span className="step-circle-label">{label}</span>
@@ -36,24 +36,23 @@ export default function StepCircle({
 function StatusIcon({ status, hasFeedback }) {
   const iconClass = "step-circle-img";
 
-  // 피드백 도착 시 report.png 아이콘 표시 (available 상태에서만)
-  if (hasFeedback && status === "available") {
-    return <img src="/button/report.png" alt="Feedback Available" className={iconClass} />;
+  // 2nd Draft 버튼: 피드백 받았을 때도 start 버튼 사용 (색상으로 구분)
+  // 2nd Draft completed일 때는 report 버튼 표시 (레포트 생성)
+  if (status === "completed" && hasFeedback) {
+    // 2nd Draft 완료되고 피드백 받았을 때 레포트 버튼
+    return <img src="/button/report.png" alt="Report Available" className={iconClass} />;
   }
 
   switch (status) {
-    case "available": // 파란 진입 가능
+    case "available":
+      // 피드백 받았든 안 받았든 start 버튼 사용 (색상으로 구분)
       return <img src="/button/start.png" alt="Start" className={iconClass} />;
-
-    case "saved": // 노란 저장됨
+    case "saved":
       return <img src="/button/saved.png" alt="Saved" className={iconClass} />;
-
-    case "rejected": // 빨간 다시하기
+    case "rejected":
       return <img src="/button/rejected.png" alt="Rejected" className={iconClass} />;
-
-    case "completed": // 초록 완료
+    case "completed":
       return <img src="/button/completed.png" alt="Completed" className={iconClass} />;
-
     case "locked":
     default:
       return (

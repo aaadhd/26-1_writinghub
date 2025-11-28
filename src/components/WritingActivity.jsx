@@ -3,7 +3,7 @@ import LessonCard from "./LessonCard.jsx";
 
 const menuItems = ["Writing Activity", "Progress", "Report", "Portfolio"];
 
-const WritingActivity = ({ lessons, onStepClick, onReportClick, teacherFeedbackMap }) => {
+const WritingActivity = ({ lessons, onStepClick, onReportClick, teacherFeedbackMap, onResetLesson }) => {
   return (
     <div className="app-shell">
       <aside className="sidebar">
@@ -56,27 +56,45 @@ const WritingActivity = ({ lessons, onStepClick, onReportClick, teacherFeedbackM
 
         <section className="lesson-row">
           {lessons.map((lesson) => {
-            // 1st Draft 피드백이 있고, 2nd Draft가 available이면 피드백 도착 표시
+            // 1st Draft 피드백 상태 확인 (2nd Draft 버튼 UI에 사용)
             const feedbackKey = `${lesson.id}_draft1`;
             const hasFeedback = Boolean(teacherFeedbackMap?.[feedbackKey]);
-            const hasDraft1Feedback = hasFeedback && lesson.draft2Status === "available";
-
-            console.log(`Lesson ${lesson.id}:`, {
-              feedbackKey,
-              hasFeedback,
-              draft2Status: lesson.draft2Status,
-              hasDraft1Feedback,
-              teacherFeedbackMap
-            });
+            // 1st Draft 피드백 완료 시 2nd Draft 버튼 색상 구분 (피드백 완료 여부와 상관없이 2nd Draft 작성 가능)
+            // 2nd Draft completed일 때는 레포트 버튼 표시
+            const hasDraft1Feedback = hasFeedback && (lesson.draft2Status === "available" || lesson.draft2Status === "completed");
 
             return (
-              <LessonCard
-                key={lesson.id}
-                lesson={lesson}
-                onStepClick={onStepClick}
-                onReportClick={onReportClick}
-                hasDraft1Feedback={hasDraft1Feedback}
-              />
+              <div key={lesson.id} style={{ position: 'relative' }}>
+                <LessonCard
+                  lesson={lesson}
+                  onStepClick={onStepClick}
+                  onReportClick={onReportClick}
+                  hasDraft1Feedback={hasDraft1Feedback}
+                />
+                {onResetLesson && (
+                  <button
+                    type="button"
+                    onClick={() => onResetLesson(lesson.id)}
+                    style={{
+                      marginTop: '12px',
+                      padding: '8px 16px',
+                      fontSize: '12px',
+                      backgroundColor: '#f05252',
+                      color: '#fff',
+                      border: 'none',
+                      borderRadius: '6px',
+                      cursor: 'pointer',
+                      width: '100%',
+                      fontWeight: '500',
+                      transition: 'background-color 0.2s',
+                    }}
+                    onMouseEnter={(e) => e.target.style.backgroundColor = '#d43f3f'}
+                    onMouseLeave={(e) => e.target.style.backgroundColor = '#f05252'}
+                  >
+                    Reset
+                  </button>
+                )}
+              </div>
             );
           })}
         </section>
@@ -90,8 +108,8 @@ WritingActivity.propTypes = {
   onStepClick: PropTypes.func.isRequired,
   onReportClick: PropTypes.func.isRequired,
   teacherFeedbackMap: PropTypes.object,
+  onResetLesson: PropTypes.func,
 };
 
 export default WritingActivity;
-
 

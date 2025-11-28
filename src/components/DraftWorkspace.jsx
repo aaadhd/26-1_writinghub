@@ -27,8 +27,16 @@ const DraftWorkspace = ({
   }, [draft1, lesson?.id]);
 
   useEffect(() => {
-    setDraft2Title(draft2?.title || "");
-    setDraft2Body(draft2?.body || "");
+    // draft2가 이미 저장되어 있으면 기존 내용 유지 (피드백 도착 시에도 유지)
+    // draft2가 없거나 lesson이 변경된 경우에만 초기화
+    if (draft2?.title || draft2?.body) {
+      setDraft2Title(draft2.title || "");
+      setDraft2Body(draft2.body || "");
+    } else if (!draft2) {
+      // draft2가 없을 때만 초기화
+      setDraft2Title("");
+      setDraft2Body("");
+    }
   }, [draft2, lesson?.id]);
 
   // Save와 Submit 모두 본문 10자 이상일 때 활성화
@@ -63,13 +71,10 @@ const DraftWorkspace = ({
   };
 
   const handleSubmitDraft1 = () => {
-    onSubmitDraft1(
-      {
-        title: draft1Title,
-        body: draft1Body,
-      },
-      hasDraft2Progress
-    );
+    onSubmitDraft1({
+      title: draft1Title,
+      body: draft1Body,
+    });
     // finalizeDraft1Submit에서 처리되므로 여기서는 alert만 표시하지 않음
     // StudentApp의 finalizeDraft1Submit에서 alert와 onBack 처리
   };
@@ -98,7 +103,7 @@ const DraftWorkspace = ({
   const isDraft1Locked = isDraft1Submitted && lesson.draft1Status !== "rejected";
   const isDraft2Locked = isDraft2Submitted && lesson.draft2Status !== "rejected";
 
-  // 2nd Draft 제출 시 1st Draft는 읽기 전용 (단, 2nd Draft가 rejected이면 1st Draft도 수정 가능)
+  // 2nd Draft 제출 시 1st Draft는 읽기 전용 (1st Draft가 completed면 절대 수정 불가)
   const is1stDraftLockedBySubmission =
     lesson.draft2Status === "completed" &&
     draft2Submitted === "true";
@@ -362,5 +367,4 @@ DraftWorkspace.propTypes = {
 };
 
 export default DraftWorkspace;
-
 

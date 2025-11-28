@@ -245,12 +245,10 @@ const TeacherApp = () => {
         if (selectedDraftType === "draft1") {
           return { ...lesson, draft1Status: "rejected", reportAvailable: false };
         } else {
-          // 2nd Draft 거부 시 1st Draft도 수정 가능하도록 상태 변경
-          // 1st Draft가 completed 상태라면 available로 변경하여 재작성 가능하게 함
-          const newDraft1Status = lesson.draft1Status === "completed" ? "available" : lesson.draft1Status;
+          // 2nd Draft 거부 시 2nd Draft만 rejected로 변경
+          // 1st Draft는 completed 상태 유지 (절대 변경되지 않음)
           return {
             ...lesson,
-            draft1Status: newDraft1Status,
             draft2Status: "rejected",
             reportAvailable: false
           };

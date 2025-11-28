@@ -28,11 +28,9 @@ const writeJSON = (key, value) => {
   try {
     const valueStr = JSON.stringify(value);
     window.localStorage.setItem(key, valueStr);
-    // 커스텀 이벤트로 같은 탭에서도 알림 (storage 이벤트는 다른 탭에서만 발생)
-    window.dispatchEvent(new CustomEvent("localStorageChange", { 
-      detail: { key, newValue: valueStr, value } 
+    window.dispatchEvent(new CustomEvent("localStorageChange", {
+      detail: { key, newValue: valueStr, value },
     }));
-    // 다른 탭/앱에 변경사항 알림
     window.dispatchEvent(new StorageEvent("storage", { key, newValue: valueStr }));
   } catch (error) {
     console.warn(`Failed to write ${key} to localStorage`, error);
@@ -71,20 +69,4 @@ export const loadDraftEvaluated = () =>
 
 export const saveDraftEvaluated = (value) =>
   writeJSON(STORAGE_KEYS.draftEvaluated, value);
-
-export const storageHelpers = {
-  loadLessons,
-  saveLessons,
-  loadDraftMap,
-  saveDraftMap,
-  loadSubmittedMap,
-  saveSubmittedMap,
-  loadTeacherFeedback,
-  saveTeacherFeedback,
-  loadFeedbackSubmitted,
-  saveFeedbackSubmitted,
-  loadDraftEvaluated,
-  saveDraftEvaluated,
-};
-
 

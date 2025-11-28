@@ -1,0 +1,12 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[dev]
+  command = "npm run dev"
+  targetPort = 5173
+
+[deploy]
+  ignore = "git diff --quiet HEAD^ HEAD ./src ./public ./vite.config.js ./package.json"
+
+

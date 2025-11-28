@@ -300,6 +300,16 @@ body {
   background: transparent;
 }
 
+/* 1st Draft 피드백 받았을 때 2nd Draft 버튼 색상 구분 */
+.step-circle.step-has-feedback {
+  background: linear-gradient(135deg, #4caf50 0%, #2e7d32 100%);
+  box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+}
+
+.step-circle.step-has-feedback .step-circle-img {
+  filter: brightness(0) invert(1);
+}
+
 .step-saved {
   background: transparent;
 }
